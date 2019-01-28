@@ -333,6 +333,59 @@ data:
       - channel: '#alertmanager-test'
         send_resolved: true
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: config-volume
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: rook-ceph-block
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: templates-volume
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: rook-ceph-block
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: rook-ceph-block
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-persistent-storage
+  namespace: monitoring
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: rook-ceph-block
+---
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -367,13 +420,19 @@ spec:
           mountPath: /alertmanager
       volumes:
       - name: config-volume
+        persistentVolumeClaim:
+          claimName: config-volume
         configMap:
           name: alertmanager
       - name: templates-volume
+        persistentVolumeClaim:
+          claimName: templates-volume
         configMap:
           name: alertmanager-templates
       - name: alertmanager
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: alertmanager
+
 ---
 apiVersion: v1
 kind: Service
@@ -456,7 +515,9 @@ spec:
           mountPath: /var/lib/grafana
       volumes:
       - name: grafana-persistent-storage
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: grafana-persistent-storage
+        #  emptyDir: {}
 ---
 apiVersion: v1
 data:
